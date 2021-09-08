@@ -5,24 +5,15 @@ app.get('/', function(request, response) {
     response.send('Hola desde el servidor express ACTUALIZADO');
 })
 
-app.get('/users', (request, response) => {
-    let usersFromDB = [
-        { name: 'Juan', age: 20 },
-        { name: 'Pedro', age: 30 },
-        { name: 'Jose', age: 33 },
-    ];
-    response.send(usersFromDB);
-});
+var user_routes = require('./routes/user');
 
-app.get('/user', (request, response) => {
-    let usersFromDB = { name: 'Juan', age: 20 };
-    response.send(usersFromDB);
-});
-
-app.delete('/user', (request, response) => {
-    response.send('llamada a borrar un usuario');
-});
+app.use(express.urlencoded({extended: true}));
 
 
+
+
+app.use('/api',
+    user_routes
+)
 
 module.exports = app;
