@@ -6,14 +6,16 @@ app.get('/', function(request, response) {
 })
 
 var user_routes = require('./routes/user');
+var transaction_routes = require('./routes/transaction');
 
 app.use(express.urlencoded({extended: true}));
 
 
 
 
-app.use('/api',
-    user_routes
-)
+app.use('/api', [
+    user_routes, 
+    transaction_routes
+])
 
 module.exports = app;

@@ -1,38 +1,52 @@
 var User = require('../models/user');
+var bcrypt = require('bcrypt');
+// var SEED = require('../config/config').SEED;
+var salt = 10;
 
 async function addUser(req, res) {
-    let reqUser = req.body;
-    if(!reqUser.password || !reqUser.email) {
+    // Checkeamos si los datos que son requeridos obligatoriamente vienen en la request
+    if(!req.body.password || !req.body.email || !req.body.name) {
         return res.status(400).send({
             ok: false,
             msg: 'Debe enviar todos los campos requeridos'
         })
     }
 
-    console.log(reqUser);
-
-    let user = new User(reqUser);
-    // Se guarda el nuevo usuario en la DB
-    user.save((error, user) => {
+    req.body.email = req.body.email.toLowerCase();
+    // let email = req.body.email.toLowerCase();
+    let user = new User(req.body);
+    
+    bcrypt.hash(user.password, salt, (error, hash) => {
         if(error) return res.status(500).send({
             ok: false,
-            msg: 'Error al crear usuario',
+            msg: 'No se pudo guardar usuario',
             error
         });
 
-        if(!user) return res.status(404).send({
-            ok: false,
-            msg: 'No se pudo crear el usuario',
-        })
-
-        return res.status(200).send({
-            ok: true,
-            msg: 'El usuario fue CREADO correctamente',
-            user
-        })
-
-
-    });
+        if(hash) {
+            user.password = hash;
+            user.save((error, user) => {
+                if(error) return res.status(500).send({
+                    ok: false,
+                    msg: 'Error al crear usuario',
+                    error
+                });
+        
+                if(!user) return res.status(404).send({
+                    ok: false,
+                    msg: 'No se pudo crear el usuario',
+                })
+                user.password = undefined;
+                return res.status(200).send({
+                    ok: true,
+                    msg: 'El usuario fue CREADO correctamente',
+                    user
+                })
+            });
+        }
+    })
+    // Se guarda el nuevo usuario en la DB
+    
 
     // console.log(newUser);
     // res.send({
@@ -87,7 +101,6 @@ function getUser(req, res) {
 
 
 // User.find({ country: 'Jhon' })
-
 function delUser(req, res) {
     const id = req.params.id;
     User.findByIdAndDelete(id, (error, userDeleted) => {
@@ -109,10 +122,90 @@ function delUser(req, res) {
     })
 }
 
+function updUser(req, res) {
+    const id = req.params.id;
+    const updateData = req.body;
+    // updateData
+    if(updateData.email) updateData.email = updateData.email.toLowerCase();
+
+    User.findByIdAndUpdate(id, updateData, {new: true} ,(error, userUpdated) => {
+        if(error) return res.status(500).send({
+            ok: false,
+            msg: 'No se pudo actualizar el usuario',
+            error
+        });
+
+        if(!userUpdated) return res.status(404).send({
+            ok: false,
+            msg: 'Usuario a actualizar no encotrado',
+        });
+
+        return res.status(200).send({
+            ok: true,
+            msg: 'Usuario actualizado',
+            userUpdated
+        })
+    })
+}
+
+const login = (req, res) => {
+    // const { password, email } = req.body;
+
+    const passwordText = req.body.password;
+    const emailToFind = req.body.email;
+    
+    User.findOne({ email : emailToFind}).exec((error, user) => {
+        if(error) return res.status(500).send({
+            ok: false,
+            msg: 'No se pudo realizar el login',
+            error
+        })
+
+        if(!user) return res.status(404).send({
+            ok: false,
+            msg: 'El usuario no fue encontrado',
+        });
+
+        const passwordDBHashed = user.password;
+        bcrypt.compare(passwordText, passwordDBHashed, (err, result) => {
+            if(err) return res.status(500).send({
+                ok: false,
+                msg: 'Error interno al realizar login'
+            })
+            
+            if(result) {
+                user.password = undefined;
+                return res.status(200).send({
+                    ok: true,
+                    msg: 'Login correcto',
+                    user
+                })
+            } else {
+                return res.status(401).send({
+                    ok: false,
+                    msg: 'Datos ingresados no son correcto.'
+                }) 
+            }
+        });
+        // if(password === user.password) {
+        //     user.password = undefined;
+        //     return res.status(200).send({
+        //         ok: true,
+        //         msg: 'Login correcto',
+        //         user
+        //     })
+        // }
+
+        
+    })
+
+}
 
 module.exports = {
     addUser,
     getUsers,
     getUser,
-    delUser
+    delUser,
+    updUser,
+    login
 }
