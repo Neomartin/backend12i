@@ -6,11 +6,7 @@ async function createTransaction(req, res) {
     try {
         let newTransaction = new Transaction(req.body);
         // checkear si viene una fecha de creación desde el front o sino asigno la fecha actual
-        if(!newTransaction.created_at) {
-            // getTime me devuelve la fecha en time unix en milisegundos
-            newTransaction.created_at = new Date().getTime()
-        }
-    
+        console.log(newTransaction);
         const transaction = await newTransaction.save();
 
         if(!transaction) return res.status(401).send({
@@ -169,9 +165,56 @@ const getMovementsByValue = function(req, res) {
 
 }
 
-//  buscarTransacciones()
+function updateMovement(req, res) {
+    const id = req.params.id;
+    const update = req.body;
+    console.log(req.params)
+    Transaction.findByIdAndUpdate(id, update, {new: true} , (error, transactionUpdated) => {
+        if(error) return res.status(500).send({
+            ok: false,
+            msg: 'Error al actualizar la transacción',
+            error
+        });
+        if(!transactionUpdated) return res.status(404).send({
+            ok: false,
+            msg: 'No se encontró la transacción a actualizar ',
+        })
+        return res.status(200).send({
+            ok: true,
+            msg: '',
+            transactionUpdated
+        })
+    } )
+}
+
+//  buscarTransacciones();
+
+function updateInvalidDate(req, res) {
+    let transactionArrayFromDB = [
+        {created_at: 1632442060.957},
+        {created_at: 1632442060000},
+        {created_at: 1632442060000},
+        {created_at: 1632442060.957},
+    ];
+    transactionArrayFromDB.forEach(t  => {
+        let createdLength = t.created_at.toString().length;
+        if(createdLength > 10) {
+            if(createdLength === 14) {
+
+                t.created_at = t.created_at.toString().replace('.', '');
+                t.created_at = parseInt(t.created_at);
+            }
+            t.created_at = parseInt(t.created_at / 1000);
+        }
+    })
+
+    console.log(transactionArrayFromDB);
+}
+
 module.exports = {
     createTransaction,
     getMovements,
-    getMovementsByValue
+    getMovementsByValue,
+    updateMovement,
+    updateInvalidDate
 }
