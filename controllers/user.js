@@ -2,6 +2,7 @@ var User = require('../models/user');
 var bcrypt = require('bcrypt');
 // var SEED = require('../config/config').SEED;
 var salt = 10;
+var jwtHelper = require('../helpers/jwt');
 
 async function addUser(req, res) {
     // Checkeamos si los datos que son requeridos obligatoriamente vienen en la request
@@ -148,56 +149,55 @@ function updUser(req, res) {
     })
 }
 
-const login = (req, res) => {
-    // const { password, email } = req.body;
+const login = async (req, res) => {
+    // Login user: oreo@rc.com - pass: 1234
 
     const passwordText = req.body.password;
     const emailToFind = req.body.email;
-    
-    User.findOne({ email : emailToFind}).exec((error, user) => {
-        if(error) return res.status(500).send({
-            ok: false,
-            msg: 'No se pudo realizar el login',
-            error
-        })
 
+
+    try {
+        const user = await User.findOne({ email : emailToFind}).exec();
+        console.log('find')
         if(!user) return res.status(404).send({
             ok: false,
             msg: 'El usuario no fue encontrado',
         });
 
         const passwordDBHashed = user.password;
-        bcrypt.compare(passwordText, passwordDBHashed, (err, result) => {
-            if(err) return res.status(500).send({
-                ok: false,
-                msg: 'Error interno al realizar login'
-            })
-            
-            if(result) {
-                user.password = undefined;
-                return res.status(200).send({
-                    ok: true,
-                    msg: 'Login correcto',
-                    user
-                })
-            } else {
-                return res.status(401).send({
-                    ok: false,
-                    msg: 'Datos ingresados no son correcto.'
-                }) 
-            }
-        });
-        // if(password === user.password) {
-        //     user.password = undefined;
-        //     return res.status(200).send({
-        //         ok: true,
-        //         msg: 'Login correcto',
-        //         user
-        //     })
-        // }
+                                            // claveplana    dasdsa0-das-9das90-8dsa7890d7890asd890sad0-dsa0-9
+        const result = await bcrypt.compare(passwordText, passwordDBHashed);
+        console.log('bcrypt')
+        if(result) {
+            // Elimino el password del usuario obtenido en la base de datos para no devolverlo como propiedad en mi respuesta
+            user.password = undefined;
 
-        
-    })
+            // user._id = JSON.stringify(user._id);
+            // Generar el JWT
+            const token = await jwtHelper.generateJWT(user);
+            console.log('jwt')
+            return res.status(200).send({
+                ok: true,
+                msg: 'Login correcto',
+                user, 
+                token
+            })
+        } else {
+            return res.status(401).send({
+                ok: false,
+                msg: 'Datos ingresados no son correcto.'
+            }) 
+        }
+    }
+    catch(error) {
+        return res.status(500).send({
+            ok: false,
+            msg: 'No se pudo realizar el login',
+            error
+        })
+    }
+   
+    
 
 }
 

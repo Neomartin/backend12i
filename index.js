@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
-const password = require('./config/config').MONGOPASS
+// const password = require('./config/config').MONGOPASS
 const app = require('./app');
+const password = 'alfabeta';
 
 var PORT = 3200;
 const URL = `mongodb+srv://rollingcode12i:${password}@first.4gzas.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -14,12 +15,9 @@ const URL = `mongodb+srv://rollingcode12i:${password}@first.4gzas.mongodb.net/my
             app.listen(PORT, () => {
                 console.log('\x1b[33m Server started on port ' + PORT + '\x1b[37m');
             });
-        // }).catch(err => {
-            
+        // }).catch(err => {       
     }
     catch (err) {
         console.log('\x1b[31m Error al conectar a la base de datos \x1b[37m', err);
     }
 })();
-
-    // })
