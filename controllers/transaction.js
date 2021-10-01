@@ -27,72 +27,71 @@ async function createTransaction(req, res) {
             error
         })
     }
-    // req.body: value, client_id, description, 
-   
 }
 
 const getMovements = async (req, res) => {
+    console.log(req)
     console.log('Busqueda by id')
-        const id = req.params.id;
-        const typeOfMovement = req.params.type;
-        if(id) {
-            try {
-                let transactions = await Transaction.find({ client_id: id });
-                let user = await User.findById(id).exec();
-                console.log(transactions);
-                console.log(user);
-                if(!transactions || !user) {
-                    return res.status(404).send({
-                        ok: false,
-                        msg: 'No se pudo obtener las transaccioneso usuarios',
-                    })
-                }
-
-                return res.status(200).send({
-                    ok: true,
-                    msg: 'Transacciones y Usuario obtenidos correctamente',
-                    transactions,
-                    user
-                })
-
-                
-            } catch(error) {
-                return res.status(500).send({
+    const id = req.params.id;
+    const typeOfMovement = req.params.type;
+    if(id) {
+        try {
+            let transactions = await Transaction.find({ client_id: id });
+            let user = await User.findById(id).exec();
+            console.log(transactions);
+            console.log(user);
+            if(!transactions || !user) {
+                return res.status(404).send({
                     ok: false,
-                    msg: 'Error al obtener transacciones del usuario',
-                    error
-                });
-            }   
-            // Buscar listado a través de un ID
-            // Transaction.find({ client_id: id }, (error, transactions) => {
-            //     if(error) return res.status(500).send({
-            //         ok: false,
-            //         msg: 'Error al obtener transacciones del usuario',
-            //         error
-            //     });
-            //     if(!transactions) return res.status(404).send({
-            //         ok: false,
-            //         msg: 'No se pudo obtener las transacciones del usuario',
-            //     })
-            //     // Obtener los datos del usuario
-            //     User.findById(id, (error, user) => {
-            //         if(error) return res.status(500).send({
-            //             ok: false,
-            //             msg: 'Error al obtener usuario',
-            //             error
-            //         });
-            //         if(!user) return res.status(404).send({
-            //             ok: false,
-            //             msg: 'No se pudo obtener usuario',
-            //         })
-            //         return res.status(200).send({
-            //             ok: true,
-            //             msg: 'Transacciones y Usuario obtenidos correctamente',
-            //             transactions,
-            //             user
-            //         })
-            //     })
-            // });
+                    msg: 'No se pudo obtener las transaccioneso usuarios',
+                })
+            }
+
+            return res.status(200).send({
+                ok: true,
+                msg: 'Transacciones y Usuario obtenidos correctamente',
+                transactions,
+                user
+            })
+
+            
+        } catch(error) {
+            return res.status(500).send({
+                ok: false,
+                msg: 'Error al obtener transacciones del usuario',
+                error
+            });
+        }   
+        // Buscar listado a través de un ID
+        // Transaction.find({ client_id: id }, (error, transactions) => {
+        //     if(error) return res.status(500).send({
+        //         ok: false,
+        //         msg: 'Error al obtener transacciones del usuario',
+        //         error
+        //     });
+        //     if(!transactions) return res.status(404).send({
+        //         ok: false,
+        //         msg: 'No se pudo obtener las transacciones del usuario',
+        //     })
+        //     // Obtener los datos del usuario
+        //     User.findById(id, (error, user) => {
+        //         if(error) return res.status(500).send({
+        //             ok: false,
+        //             msg: 'Error al obtener usuario',
+        //             error
+        //         });
+        //         if(!user) return res.status(404).send({
+        //             ok: false,
+        //             msg: 'No se pudo obtener usuario',
+        //         })
+        //         return res.status(200).send({
+        //             ok: true,
+        //             msg: 'Transacciones y Usuario obtenidos correctamente',
+        //             transactions,
+        //             user
+        //         })
+        //     })
+        // });
 
         } else {
 

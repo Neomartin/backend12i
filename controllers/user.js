@@ -47,8 +47,6 @@ async function addUser(req, res) {
         }
     })
     // Se guarda el nuevo usuario en la DB
-    
-
     // console.log(newUser);
     // res.send({
     //     ok: true, 
@@ -76,6 +74,16 @@ async function getUsers(req, res) {
 }
 
 function getUser(req, res) {
+    // Si no me envian ID de usuario a buscar, devuelvo error por que no voy a saber de quien es que hay que buscar datos
+    if(!req.params.id) {
+        return res.status(401).send({ ok: false, msg: 'Debe enviar un id'})
+    }
+    
+    // Si el usuario es un cliente y el id que quiere consultar datos de la persona no son los de el, no puedo dejar pasar
+    if(req.user.role === 'CLIENT_ROLE' && req.user._id !== req.params.id) {
+        return res.status(401).send({ ok: false, msg: 'No tiene permisos para acceder a la información de este usuario'})
+    }
+
     console.log(req);
     console.log(req.params)
     const id = req.params.id;
@@ -149,13 +157,13 @@ function updUser(req, res) {
     })
 }
 
+/**
+ * @event login: Loguin de usuario y obtención de token
+ */
 const login = async (req, res) => {
     // Login user: oreo@rc.com - pass: 1234
-
     const passwordText = req.body.password;
     const emailToFind = req.body.email;
-
-
     try {
         const user = await User.findOne({ email : emailToFind}).exec();
         console.log('find')
@@ -171,8 +179,7 @@ const login = async (req, res) => {
         if(result) {
             // Elimino el password del usuario obtenido en la base de datos para no devolverlo como propiedad en mi respuesta
             user.password = undefined;
-
-            // user._id = JSON.stringify(user._id);
+    
             // Generar el JWT
             const token = await jwtHelper.generateJWT(user);
             console.log('jwt')
@@ -196,9 +203,6 @@ const login = async (req, res) => {
             error
         })
     }
-   
-    
-
 }
 
 module.exports = {

@@ -1,13 +1,8 @@
 const jwt = require('jsonwebtoken');
-const SEED = '4lF4-b3T@!'
-
+const SEED = require('../config/config').SEED;
 
 function generateJWT(user) {
     // Generar token basado en objeto usuario logueado
-    console.log('JSON stringify')
-    console.log(JSON.stringify(user))
-    console.log('toJSON')
-    console.log(user.toJSON())
     return new Promise((resolve, reject) => {
         jwt.sign(
             user.toJSON(), //Payload

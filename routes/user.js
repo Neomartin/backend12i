@@ -1,19 +1,19 @@
 var express = require('express');
 var userController = require('../controllers/user');
+var ensureAuth = require('../middlewares/authentication');
 
 var api = express.Router();
 
-api.post('/user', userController.addUser);
-api.get('/user/:id', userController.getUser);
-api.delete('/user/:id', userController.delUser);
-api.put('/user/:id', userController.updUser);
+api.post('/user', ensureAuth, userController.addUser);
+api.get('/user/:id', ensureAuth, userController.getUser);
+api.delete('/user/:id', ensureAuth, userController.delUser);
+api.put('/user/:id', ensureAuth, userController.updUser);
 
 // User login
 api.post('/login', userController.login);
 
-api.get('/users', userController.getUsers);
+
+api.get('/users', ensureAuth, userController.getUsers);
 // api.delete('/users/:prop/:value')
 
 module.exports = api;
-
-
