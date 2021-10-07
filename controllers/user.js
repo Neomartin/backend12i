@@ -57,6 +57,10 @@ async function addUser(req, res) {
 
 async function getUsers(req, res) {
     // llamada a la DB
+    if(req.user.role === 'CLIENT_ROLE') {
+        return res.status(401).send({ ok: false, msg: 'No tiene permisos para la infomación de todos los usuarios'})
+    }
+
     let users = await User.find({ });
 
     const total = users.length;
@@ -73,6 +77,9 @@ async function getUsers(req, res) {
     })
 }
 
+/**
+ * @users getUser funcion para obtener información de un usuario a través de un ID
+ */
 function getUser(req, res) {
     // Si no me envian ID de usuario a buscar, devuelvo error por que no voy a saber de quien es que hay que buscar datos
     if(!req.params.id) {
@@ -84,8 +91,6 @@ function getUser(req, res) {
         return res.status(401).send({ ok: false, msg: 'No tiene permisos para acceder a la información de este usuario'})
     }
 
-    console.log(req);
-    console.log(req.params)
     const id = req.params.id;
  
     // llamada a la DB users
@@ -132,8 +137,16 @@ function delUser(req, res) {
 }
 
 function updUser(req, res) {
+
     const id = req.params.id;
     const updateData = req.body;
+
+    if(req.user.role === 'CLIENT_ROLE' && req.user._id !== id) {
+        return res.status(401).send({
+            ok: false,
+            msg: 'No tiene permisos para modificar este usuario.'
+        })
+    }
     // updateData
     if(updateData.email) updateData.email = updateData.email.toLowerCase();
 
@@ -204,6 +217,7 @@ const login = async (req, res) => {
         })
     }
 }
+
 
 module.exports = {
     addUser,

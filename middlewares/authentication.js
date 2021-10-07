@@ -3,7 +3,7 @@ var SEED = require('../config/config').SEED;
 
 const ensureAuth = (req, res, next) => {
     if(!req.headers.authorization) {
-        return res.status(401).send({ ok: false, msg: 'Autorización incorrecta'})
+        return res.status(401).send({ ok: false, msg: 'Authorization FAIL: Token null'})
     }
     const token = req.headers.authorization.replace(/['"]+/g, '');
     jwt.verify(token, SEED, (error, jwtDecoded) => {

@@ -7,7 +7,7 @@ function generateJWT(user) {
         jwt.sign(
             user.toJSON(), //Payload
             SEED, //Semilla o privateKey
-            {expiresIn: 360, algorithm: 'HS512'}, //Options
+            {expiresIn: 3600, algorithm: 'HS512'}, //Options
             (error, token) => {
                 if(error) {
                     // Deniego la promesa y envío un error

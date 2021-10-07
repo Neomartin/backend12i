@@ -1,6 +1,6 @@
 const Transaction = require('../models/transaction'); 
 const User = require('../models/user');
-
+const Algo = ":dasdsad"
 
 async function createTransaction(req, res) {
     try {
@@ -30,9 +30,20 @@ async function createTransaction(req, res) {
 }
 
 const getMovements = async (req, res) => {
-    console.log(req)
-    console.log('Busqueda by id')
-    const id = req.params.id;
+    console.log(req.query);
+    const id = req.query.id;
+    const start = +req.query.start || 0;
+    const limit = +req.query.limit || 5;
+           
+    if(req.user.role === 'CLIENT_ROLE' && (!id || req.user._id !== id)) {
+        return res.status(401).send({ok: false, msg: 'No puede acceder a las transacciones'})
+    }
+                        
+    // if(req.user.role === 'CLIENT_ROLE' && req.user._id !== i) {
+    //     return res.status(401).send({ok: false, msg: 'No puede acceder a las transacciones'})
+    // }
+
+
     const typeOfMovement = req.params.type;
     if(id) {
         try {
@@ -95,13 +106,15 @@ const getMovements = async (req, res) => {
 
         } else {
 
-
+            console.log(limit, start)
                                     // $lt: menor que
                                     // $lte: menor o igual que
                                     // $gt: mayor que
                                     // $gte: mayor o igual que
             Transaction.find()
-                       .sort('-value description')
+                       .skip(start)
+                       .limit(limit)
+                    //    .sort('-value description')
                        .populate('client_id', 'name surname email')
                        .exec((error, transactions) => {
                             if(error) return res.status(500).send({

@@ -3,9 +3,9 @@ var mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 var rolesValidos = [
-    'CLIENT_ROLE',
-    'USER_ROLE',
-    'ADMIN_ROLE'
+    'CLIENT_ROLE', //cliente
+    'USER_ROLE', //empleado
+    'ADMIN_ROLE' //admin o encargado
 ]
 
 const UserSchema = new Schema({
