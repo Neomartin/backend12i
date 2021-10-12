@@ -4,6 +4,7 @@ var ensureAuth = require('../middlewares/authentication');
 
 var api = express.Router();
 
+
 api.post('/user', ensureAuth, userController.addUser);
 api.get('/user/:id', ensureAuth, userController.getUser);
 api.delete('/user/:id', ensureAuth, userController.delUser);

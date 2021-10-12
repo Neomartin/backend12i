@@ -15,7 +15,8 @@ const UserSchema = new Schema({
     password: { type: String, required: true },
     dir: String,
     dir_num: Number,
-    role: { type: String, required: true, default: 'USER_ROLE', enum: rolesValidos }
+    role: { type: String, required: true, default: 'USER_ROLE', enum: rolesValidos },
+    avatar: { type: String, default: 'default.png'}
 })
 
                                 // transactions

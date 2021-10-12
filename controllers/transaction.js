@@ -105,34 +105,56 @@ const getMovements = async (req, res) => {
         // });
 
         } else {
+            try {
+                console.log(limit, start)
+                                    // $lt: menor que       // $lte: menor o igual que      // $gt: mayor que
+                                    // $gte: mayor o igual que   //$ne: not equal
+                const [ total, transactions ] = await Promise.all([
+                    Transaction.countDocuments(),
+                    Transaction.find({})
+                            .skip(start)
+                            .limit(limit)
+                            .sort('-value description')
+                            .populate('client_id', 'name surname email')
+                            .exec()
+                ]);
+                if(!transactions) return res.status(404).send({
+                    ok: false,
+                    msg: 'No existen transacciones en la base de datos',
+                })
 
-            console.log(limit, start)
-                                    // $lt: menor que
-                                    // $lte: menor o igual que
-                                    // $gt: mayor que
-                                    // $gte: mayor o igual que
-            Transaction.find()
-                       .skip(start)
-                       .limit(limit)
-                    //    .sort('-value description')
-                       .populate('client_id', 'name surname email')
-                       .exec((error, transactions) => {
-                            if(error) return res.status(500).send({
-                                ok: false,
-                                msg: 'Error al obtener transacción',
-                                error
-                            });
-                            if(!transactions) return res.status(404).send({
-                                ok: false,
-                                msg: 'No existen transacciones en la base de datos',
-                            })
-                            return res.status(200).send({
-                                ok: true,
-                                msg: 'Transacciones obtenidas correctamente',
-                                count: transactions.length,
-                                transactions,
-                            })
-                        });
+                return res.status(200).send({
+                    ok: true,
+                    msg: 'Transacciones obtenidas correctamente',
+                    itemsPerPage: limit,
+                    total: total, 
+                    pages: Math.ceil(total / limit),
+                    transactions,
+                })
+
+            } catch (error) {
+                return res.status(500).send({
+                    ok: false,
+                    msg: 'Error al obtener transacciónes',
+                    error
+                });
+            }
+            
+
+
+                
+                        
+            // (error, transactions) => {
+            //     if(error) 
+            //     
+            //     return res.status(200).send({
+            //         ok: true,
+            //         msg: 'Transacciones obtenidas correctamente',
+            //         itemsPerPage: transactions.length,
+            //         total: 
+            //         transactions,
+            //     })
+            // });
         }
 
        

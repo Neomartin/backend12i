@@ -7,6 +7,7 @@ app.get('/', function(request, response) {
 
 var user_routes = require('./routes/user');
 var transaction_routes = require('./routes/transaction');
+var upload_routes = require('./routes/upload')
 
 app.use(express.urlencoded({extended: true}));
 
@@ -15,7 +16,8 @@ app.use(express.urlencoded({extended: true}));
 
 app.use('/api', [
     user_routes, 
-    transaction_routes
+    transaction_routes,
+    upload_routes
 ])
 
 module.exports = app;

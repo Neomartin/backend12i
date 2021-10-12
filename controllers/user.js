@@ -3,10 +3,14 @@ var bcrypt = require('bcrypt');
 // var SEED = require('../config/config').SEED;
 var salt = 10;
 var jwtHelper = require('../helpers/jwt');
+const {
+    v4: uuid
+} = require('uuid');
+
 
 async function addUser(req, res) {
     // Checkeamos si los datos que son requeridos obligatoriamente vienen en la request
-    if(!req.body.password || !req.body.email || !req.body.name) {
+    if (!req.body.password || !req.body.email || !req.body.name) {
         return res.status(400).send({
             ok: false,
             msg: 'Debe enviar todos los campos requeridos'
@@ -16,24 +20,24 @@ async function addUser(req, res) {
     req.body.email = req.body.email.toLowerCase();
     // let email = req.body.email.toLowerCase();
     let user = new User(req.body);
-    
+
     bcrypt.hash(user.password, salt, (error, hash) => {
-        if(error) return res.status(500).send({
+        if (error) return res.status(500).send({
             ok: false,
             msg: 'No se pudo guardar usuario',
             error
         });
 
-        if(hash) {
+        if (hash) {
             user.password = hash;
             user.save((error, user) => {
-                if(error) return res.status(500).send({
+                if (error) return res.status(500).send({
                     ok: false,
                     msg: 'Error al crear usuario',
                     error
                 });
-        
-                if(!user) return res.status(404).send({
+
+                if (!user) return res.status(404).send({
                     ok: false,
                     msg: 'No se pudo crear el usuario',
                 })
@@ -57,18 +61,21 @@ async function addUser(req, res) {
 
 async function getUsers(req, res) {
     // llamada a la DB
-    if(req.user.role === 'CLIENT_ROLE') {
-        return res.status(401).send({ ok: false, msg: 'No tiene permisos para la infomación de todos los usuarios'})
+    if (req.user.role === 'CLIENT_ROLE') {
+        return res.status(401).send({
+            ok: false,
+            msg: 'No tiene permisos para la infomación de todos los usuarios'
+        })
     }
 
-    let users = await User.find({ });
+    let users = await User.find({});
 
     const total = users.length;
     const per_page = 2;
     const total_pages = Math.ceil(total / per_page);
 
     res.status(200).send({
-        ok: true, 
+        ok: true,
         msg: 'Se obtuvieron los usuarios',
         users,
         total,
@@ -82,31 +89,37 @@ async function getUsers(req, res) {
  */
 function getUser(req, res) {
     // Si no me envian ID de usuario a buscar, devuelvo error por que no voy a saber de quien es que hay que buscar datos
-    if(!req.params.id) {
-        return res.status(401).send({ ok: false, msg: 'Debe enviar un id'})
+    if (!req.params.id) {
+        return res.status(401).send({
+            ok: false,
+            msg: 'Debe enviar un id'
+        })
     }
-    
+
     // Si el usuario es un cliente y el id que quiere consultar datos de la persona no son los de el, no puedo dejar pasar
-    if(req.user.role === 'CLIENT_ROLE' && req.user._id !== req.params.id) {
-        return res.status(401).send({ ok: false, msg: 'No tiene permisos para acceder a la información de este usuario'})
+    if (req.user.role === 'CLIENT_ROLE' && req.user._id !== req.params.id) {
+        return res.status(401).send({
+            ok: false,
+            msg: 'No tiene permisos para acceder a la información de este usuario'
+        })
     }
 
     const id = req.params.id;
- 
+
     // llamada a la DB users
     User.findById(id, (error, user) => {
-        if(error) return res.status(500).send({
-            ok: false, 
-            msg: 'Error al obtener usuario', 
+        if (error) return res.status(500).send({
+            ok: false,
+            msg: 'Error al obtener usuario',
             error
         });
-        if(!user) return res.status(404).send({
+        if (!user) return res.status(404).send({
             ok: false,
             msg: 'Usuario NO encontrado',
             user
         })
         return res.status(200).send({
-            ok: true, 
+            ok: true,
             msg: 'Usuario obtenido CORRECTAMENTE de la DB',
             user
         })
@@ -118,12 +131,12 @@ function getUser(req, res) {
 function delUser(req, res) {
     const id = req.params.id;
     User.findByIdAndDelete(id, (error, userDeleted) => {
-        if(error) return res.status(500).send({
+        if (error) return res.status(500).send({
             ok: false,
             msg: 'No se pudo borrar el usuario',
             error
         });
-        if(!userDeleted) return res.status(404).send({
+        if (!userDeleted) return res.status(404).send({
             ok: false,
             msg: 'Usuario no encotrado',
         })
@@ -141,23 +154,25 @@ function updUser(req, res) {
     const id = req.params.id;
     const updateData = req.body;
 
-    if(req.user.role === 'CLIENT_ROLE' && req.user._id !== id) {
+    if (req.user.role === 'CLIENT_ROLE' && req.user._id !== id) {
         return res.status(401).send({
             ok: false,
             msg: 'No tiene permisos para modificar este usuario.'
         })
     }
     // updateData
-    if(updateData.email) updateData.email = updateData.email.toLowerCase();
+    if (updateData.email) updateData.email = updateData.email.toLowerCase();
 
-    User.findByIdAndUpdate(id, updateData, {new: true} ,(error, userUpdated) => {
-        if(error) return res.status(500).send({
+    User.findByIdAndUpdate(id, updateData, {
+        new: true
+    }, (error, userUpdated) => {
+        if (error) return res.status(500).send({
             ok: false,
             msg: 'No se pudo actualizar el usuario',
             error
         });
 
-        if(!userUpdated) return res.status(404).send({
+        if (!userUpdated) return res.status(404).send({
             ok: false,
             msg: 'Usuario a actualizar no encotrado',
         });
@@ -178,38 +193,39 @@ const login = async (req, res) => {
     const passwordText = req.body.password;
     const emailToFind = req.body.email;
     try {
-        const user = await User.findOne({ email : emailToFind}).exec();
+        const user = await User.findOne({
+            email: emailToFind
+        }).exec();
         console.log('find')
-        if(!user) return res.status(404).send({
+        if (!user) return res.status(404).send({
             ok: false,
             msg: 'El usuario no fue encontrado',
         });
 
         const passwordDBHashed = user.password;
-                                            // claveplana    dasdsa0-das-9das90-8dsa7890d7890asd890sad0-dsa0-9
+        // claveplana    dasdsa0-das-9das90-8dsa7890d7890asd890sad0-dsa0-9
         const result = await bcrypt.compare(passwordText, passwordDBHashed);
         console.log('bcrypt')
-        if(result) {
+        if (result) {
             // Elimino el password del usuario obtenido en la base de datos para no devolverlo como propiedad en mi respuesta
             user.password = undefined;
-    
+
             // Generar el JWT
             const token = await jwtHelper.generateJWT(user);
             console.log('jwt')
             return res.status(200).send({
                 ok: true,
                 msg: 'Login correcto',
-                user, 
+                user,
                 token
             })
         } else {
             return res.status(401).send({
                 ok: false,
                 msg: 'Datos ingresados no son correcto.'
-            }) 
+            })
         }
-    }
-    catch(error) {
+    } catch (error) {
         return res.status(500).send({
             ok: false,
             msg: 'No se pudo realizar el login',
@@ -218,6 +234,86 @@ const login = async (req, res) => {
     }
 }
 
+/**
+ * @event uploadImage carga de imagen para el usuario o update
+ */
+
+async function uploadImage(req, res) {
+    const id = req.query.id;
+    const maxSize = 4194304 //4mb
+    // Checkeo de que manden un id
+    if (!id) return res.status(200).send({
+        ok: false,
+        msg: "Es necesario un id para subir la imagen"
+    });
+    //Checkeo de que venga un archivo
+    if (!req.files || Object.keys(req.files).length === 0) {
+        return res.status(400).send({
+            ok: false,
+            msg: "Debe subir un archivo"
+        });
+    }
+
+    const file = req.files.avatar;
+
+    const [imgType, extension] = file.mimetype.split('/');
+    // Checkear que el archivo sea una imagen
+    if (imgType !== 'image') {
+        return res.status(400).send({
+            ok: false,
+            msg: "El archivo debe ser una imagen"
+        });
+    }
+    // Peso de imagen menor a 4mb
+    if (file.size > maxSize) {
+        return res.status(400).send({
+            ok: false,
+            msg: "El archivo debe pesar 4mb o menos"
+        });
+    }
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).send({
+                ok: false,
+                msg: "El usuario no se encontró"
+            });
+        }
+
+
+        // const imgID = uuid();
+        const imageName = `${user._id}.${extension}`;
+        // Guardar la imagen en nuestra carpeta del servidor
+        uploadPath = `./uploads/user-avatar/${imageName}`;
+
+        User.findByIdAndUpdate(id, {
+            "avatar": imageName
+        }, { new: true }, (error, user) => {
+            console.log(user)
+        });
+
+        file.mv(uploadPath, (error) => {
+            if (error) return res.status(500).send({
+                ok: false,
+                msg: "El archiv0 no se puedo guardar",
+                error
+            });
+
+            res.status(200).send({
+                ok: true,
+                msg: "File Uploaded"
+            })
+        })
+    } catch (error) {
+        return res.status(500).send({
+            ok: false,
+            msg: "El archiv0 no se puedo guardar",
+            error
+        });
+    }
+
+
+}
 
 module.exports = {
     addUser,
@@ -225,5 +321,6 @@ module.exports = {
     getUser,
     delUser,
     updUser,
-    login
+    login,
+    uploadImage
 }
