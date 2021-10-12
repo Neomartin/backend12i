@@ -130,6 +130,7 @@ function getUser(req, res) {
 // User.find({ country: 'Jhon' })
 function delUser(req, res) {
     const id = req.params.id;
+    
     User.findByIdAndDelete(id, (error, userDeleted) => {
         if (error) return res.status(500).send({
             ok: false,
@@ -239,13 +240,21 @@ const login = async (req, res) => {
  */
 
 async function uploadImage(req, res) {
+
     const id = req.query.id;
-    const maxSize = 4194304 //4mb
+    const maxSize = 4194304 //4mb (1024*1024*1024*4)
     // Checkeo de que manden un id
-    if (!id) return res.status(200).send({
+    if (!id) return res.status(400).send({
         ok: false,
         msg: "Es necesario un id para subir la imagen"
     });
+
+    if (req.user.role === 'CLIENT_ROLE' && req.user._id !== id) {
+        return res.status(401).send({
+            ok: false,
+            msg: 'No tiene permisos para modificar este usuario.'
+        })
+    }
     //Checkeo de que venga un archivo
     if (!req.files || Object.keys(req.files).length === 0) {
         return res.status(400).send({
@@ -280,28 +289,30 @@ async function uploadImage(req, res) {
             });
         }
 
-
         // const imgID = uuid();
         const imageName = `${user._id}.${extension}`;
         // Guardar la imagen en nuestra carpeta del servidor
         uploadPath = `./uploads/user-avatar/${imageName}`;
 
-        User.findByIdAndUpdate(id, {
-            "avatar": imageName
-        }, { new: true }, (error, user) => {
-            console.log(user)
-        });
+        const userUpdated = await User.findByIdAndUpdate(
+            id, 
+            { "avatar": imageName }, 
+            { new: true });
+
+        userUpdated.password = undefined;
+        // delete userUpdated._doc.password = undefined;
 
         file.mv(uploadPath, (error) => {
             if (error) return res.status(500).send({
                 ok: false,
-                msg: "El archiv0 no se puedo guardar",
+                msg: "El archivo no se puedo guardar",
                 error
             });
 
             res.status(200).send({
                 ok: true,
-                msg: "File Uploaded"
+                msg: "File Uploaded",
+                userUpdated
             })
         })
     } catch (error) {

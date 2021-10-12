@@ -16,7 +16,8 @@ const UserSchema = new Schema({
     dir: String,
     dir_num: Number,
     role: { type: String, required: true, default: 'USER_ROLE', enum: rolesValidos },
-    avatar: { type: String, default: 'default.png'}
+    avatar: { type: String, default: 'default.png'},
+    active: { type: Boolean, default: true }
 })
 
                                 // transactions
