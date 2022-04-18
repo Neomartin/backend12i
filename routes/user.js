@@ -14,8 +14,7 @@ api.put('/user/:id', ensureAuth, userController.updUser);
 // User login
 api.post('/login', userController.login);
 
-
+// Traer todos los usuarios
 api.get('/users', ensureAuth, userController.getUsers);
-// api.delete('/users/:prop/:value')
 
 module.exports = api;

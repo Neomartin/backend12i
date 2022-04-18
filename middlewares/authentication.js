@@ -7,7 +7,7 @@ const ensureAuth = (req, res, next) => {
     }
     const token = req.headers.authorization.replace(/['"]+/g, '');
     jwt.verify(token, SEED, (error, jwtDecoded) => {
-        if(error) return res.status(500).send({
+        if(error) return res.status(401).send({
             ok: false,
             msg: 'Autorización incorrecta -> no deberia ir(token)',
             error

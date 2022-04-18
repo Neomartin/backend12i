@@ -61,12 +61,12 @@ async function addUser(req, res) {
 
 async function getUsers(req, res) {
     // llamada a la DB
-    if (req.user.role === 'CLIENT_ROLE') {
-        return res.status(401).send({
-            ok: false,
-            msg: 'No tiene permisos para la infomación de todos los usuarios'
-        })
-    }
+    // if (req.user.role === 'CLIENT_ROLE') {
+    //     return res.status(401).send({
+    //         ok: false,
+    //         msg: 'No tiene permisos para la infomación de todos los usuarios'
+    //     })
+    // }
 
     let users = await User.find({});
 
@@ -130,7 +130,7 @@ function getUser(req, res) {
 // User.find({ country: 'Jhon' })
 function delUser(req, res) {
     const id = req.params.id;
-    
+
     User.findByIdAndDelete(id, (error, userDeleted) => {
         if (error) return res.status(500).send({
             ok: false,
@@ -191,8 +191,10 @@ function updUser(req, res) {
  */
 const login = async (req, res) => {
     // Login user: oreo@rc.com - pass: 1234
+    console.log(req.body);
     const passwordText = req.body.password;
     const emailToFind = req.body.email;
+    
     try {
         const user = await User.findOne({
             email: emailToFind
@@ -206,7 +208,7 @@ const login = async (req, res) => {
         const passwordDBHashed = user.password;
         // claveplana    dasdsa0-das-9das90-8dsa7890d7890asd890sad0-dsa0-9
         const result = await bcrypt.compare(passwordText, passwordDBHashed);
-        console.log('bcrypt')
+        console.log('bcrypt');
         if (result) {
             // Elimino el password del usuario obtenido en la base de datos para no devolverlo como propiedad en mi respuesta
             user.password = undefined;
@@ -227,6 +229,7 @@ const login = async (req, res) => {
             })
         }
     } catch (error) {
+        console.log(error);
         return res.status(500).send({
             ok: false,
             msg: 'No se pudo realizar el login',
